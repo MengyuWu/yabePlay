@@ -23,7 +23,9 @@ public class Post extends Model{
     //This way, if you delete a post, all related comments will be deleted as well.
     @OneToMany(mappedBy="post", cascade=CascadeType.ALL)
     public List<Comment> comments;
-    
+   
+    @ManyToMany(cascade=CascadeType.PERSIST)
+    public Set<Tag> tags;
     
     public Post(User author, String title, String content){
     	this.comments=new ArrayList<Comment>();
@@ -31,6 +33,8 @@ public class Post extends Model{
     	this.title=title;
     	this.content=content;
     	this.postedAt=new Date();
+    	//Note that we use a TreeSet here in order to keep the tag list in a predictable order
+    	this.tags=new TreeSet<Tag>();
     }
     
    
@@ -48,5 +52,23 @@ public class Post extends Model{
     public Post next() {
         return Post.find("postedAt > ? order by postedAt asc", postedAt).first();
     }
+    
+
+   public Post tagItWith(String name){
+	   tags.add(Tag.findOrCreateByName(name));
+	   return this;
+   }
+   
+   //retrieves all posts with a specific tag
+   public static List<Post> findTaggedWith(String tag){
+	   return Post.find("select distinct p from Post p join p.tags as t where t.name=?",tag).fetch();
+   }
+   
+   // retrieves all posts with multiple tags
+   public static List<Post> findTaggedWith(String... tags) {
+	    return Post.find(
+	            "select distinct p from Post p join p.tags as t where t.name in (:tags) group by p.id, p.author, p.title, p.content,p.postedAt having count(t.id) = :size"
+	    ).bind("tags", tags).bind("size", tags.length).fetch();
+	}
     
 }

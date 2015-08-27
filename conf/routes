@@ -4,7 +4,11 @@
 # Administration
 GET     /admin/?                                Admin.index
 *       /admin                                  module:crud
+
+GET    /admin/myposts/{id}                      Admin.form
 GET    /admin/new                               Admin.form
+
+POST   /admin/myposts/{id}                      Admin.save
 POST   /admin/new                               Admin.save
 
 # Import Secure routes

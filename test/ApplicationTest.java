@@ -14,4 +14,12 @@ public class ApplicationTest extends FunctionalTest {
         assertCharset(play.Play.defaultWebEncoding, response);
     }
     
+    //check that the administration area’s security works as expected
+    @Test
+    public void testAdminSecurity(){
+    	Response response=GET("/admin");
+    	assertStatus(302,response);
+    	assertHeaderEquals("Location", "/login", response);
+    }
+    
 }
